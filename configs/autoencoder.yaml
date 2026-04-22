@@ -1,0 +1,17 @@
+model:
+  name: conv_autoencoder
+  in_channels: 1
+  encoder_channels: [16, 32, 64]
+  latent_channels: 64
+
+training:
+  batch_size: 64
+  epochs: 50
+  learning_rate: 0.001
+  loss: mse
+  early_stopping_patience: 8
+
+inference:
+  patch_score: mean_residual
+  image_score: topk_mean
+  topk_fraction: 0.05

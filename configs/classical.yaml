@@ -1,0 +1,23 @@
+model:
+  name: ocsvm
+
+features:
+  use_mean: true
+  use_std: true
+  use_min: true
+  use_max: true
+  use_range: true
+  use_gradient_mean: true
+  use_gradient_std: true
+  use_roughness: true
+  use_laplacian_var: true
+
+training:
+  scaler: standard
+  ocsvm_kernel: rbf
+  ocsvm_nu: 0.05
+  ocsvm_gamma: scale
+
+inference:
+  image_score: topk_mean
+  topk_fraction: 0.05

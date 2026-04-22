@@ -1,0 +1,35 @@
+project:
+  name: mvtec-3d-ad
+  seed: 42
+
+paths:
+  dataset_root: data/raw
+  processed_root: data/processed
+  splits_root: data/splits
+  fig_root: fig
+  outputs_root: outputs
+
+data:
+  categories:
+    - bagel
+    - cable_gland
+    - carrot
+    - cookie
+    - dowel
+    - foam
+    - peach
+    - potato
+    - rope
+    - tire
+  image_size: [256, 256]
+  normalization: per_image
+  train_val_split: 0.8
+  split_seed: 42
+
+patches:
+  size: [32, 32]
+  stride: [16, 16]
+
+artifacts:
+  save_processed_maps: true
+  save_step_figures: true
