@@ -26,10 +26,3 @@ outputs/*
 !outputs/metrics/.gitkeep
 !outputs/logs/
 !outputs/logs/.gitkeep
-
-fig/01_dataset/*.png
-fig/02_preprocessing/*.png
-fig/03_patches/*.png
-fig/04_classical/*.png
-fig/05_autoencoder/*.png
-fig/06_results/*.png
