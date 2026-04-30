@@ -17,8 +17,20 @@ data/processed/<category>/
 Recommended saved artifacts:
 
 - processed depth or height map
-- optional valid-pixel mask
+- valid-pixel mask
 - optional metadata per sample if needed
+
+Current processed file format:
+
+- `<sample_id>_depth.npy`: normalized `float32` depth map
+- `<sample_id>_mask.npy`: boolean valid-depth mask
+
+Processed maps may be rectangular. With the default `preserve_area` resize mode,
+`configs/base.yaml` uses `image_size` as a target pixel area reference rather
+than as a required output shape, so long categories such as `rope` keep their
+wide format instead of being padded into a square canvas. The final processed
+height and width are snapped upward to the configured patch grid, so fixed-size
+patches land exactly on the processed map edges.
 
 ## Split Files
 
@@ -40,6 +52,16 @@ Recommended columns:
 - `rgb_path`
 - `xyz_path`
 - `mask_path`
+- `processed_depth_path`
+- `processed_mask_path`
+- `processed_valid_fraction`
+- `processed_height`
+- `processed_width`
+- `foreground_fraction`
+- `crop_top`
+- `crop_bottom`
+- `crop_left`
+- `crop_right`
 
 Label convention:
 
@@ -55,6 +77,8 @@ Current indexing choice:
 Current dataset documentation artifact:
 
 - `fig/01_dataset/index_summary.png`
+- `fig/02_preprocessing/<category>_raw_vs_processed.png`
+- `fig/03_patches/<category>_patch_overview.png`
 
 ## Output Data
 

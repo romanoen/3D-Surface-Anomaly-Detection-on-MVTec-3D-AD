@@ -22,13 +22,16 @@ data:
     - rope
     - tire
   image_size: [256, 256]
+  resize_mode: preserve_area
   normalization: per_image
+  crop_margin: 16
   train_val_split: 0.8
   split_seed: 42
 
 patches:
   size: [32, 32]
   stride: [16, 16]
+  min_valid_fraction: 0.01
 
 artifacts:
   save_processed_maps: true

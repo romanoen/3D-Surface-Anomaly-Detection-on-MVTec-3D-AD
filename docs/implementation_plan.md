@@ -253,7 +253,7 @@ Preprocessing should do only the minimum required:
 
 - load the depth or height channel,
 - handle invalid values,
-- crop or resize to a fixed size,
+- crop and resize into an aspect-preserving processed map,
 - normalize values,
 - optionally keep a valid-pixel mask if needed.
 
@@ -492,7 +492,7 @@ Files:
 Keep config values explicit:
 
 - selected categories
-- processed image size
+- processed image area reference
 - patch size
 - stride
 - normalization mode
@@ -579,7 +579,7 @@ Add small tests or sanity checks for:
 
 - raw depth visualization loads one sample per category,
 - dataset index contains expected counts,
-- preprocessing returns fixed-size arrays,
+- preprocessing returns patchable processed arrays,
 - patch extraction plus aggregation reconstructs the full image layout correctly,
 - feature extractor returns fixed-length vectors,
 - classical model can fit on a small sample,
