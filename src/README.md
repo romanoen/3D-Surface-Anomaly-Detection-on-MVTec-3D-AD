@@ -3,7 +3,7 @@
 This folder contains the reusable implementation modules.
 
 - `src/data/`: indexing, preprocessing, patch extraction, loaders
-- `src/features/`: handcrafted geometric features
+- `src/features/`: raw normalized patch features plus optional handcrafted geometric descriptors
 - `src/models/`: model definitions and wrappers
 - `src/training/`: training logic
 - `src/inference/`: patch scoring and anomaly-map generation

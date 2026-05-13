@@ -6,6 +6,7 @@ from pathlib import Path
 
 import numpy as np
 import tifffile
+from PIL import Image
 from scipy import ndimage
 
 
@@ -28,6 +29,13 @@ def extract_depth_map(xyz_map: np.ndarray) -> np.ndarray:
 def build_valid_mask(depth_map: np.ndarray) -> np.ndarray:
     """Return a boolean mask for finite positive depth values."""
     return np.isfinite(depth_map) & (depth_map > 0.0)
+
+
+def load_binary_mask(mask_path: str | Path) -> np.ndarray:
+    """Load a binary annotation mask from an image file."""
+    mask_path = Path(mask_path)
+    with Image.open(mask_path) as mask_image:
+        return np.asarray(mask_image.convert("L"), dtype=np.uint8) > 0
 
 
 def compute_otsu_threshold(values: np.ndarray, num_bins: int = 256) -> float:
@@ -336,6 +344,31 @@ def resize_depth_and_mask(
     return padded_depth, padded_mask
 
 
+def transform_binary_mask_like_processed(
+    mask: np.ndarray,
+    crop_box: tuple[int, int, int, int],
+    cfg: dict,
+) -> np.ndarray:
+    """Apply the configured crop and resize geometry to a binary annotation mask."""
+    mask = np.asarray(mask, dtype=bool)
+    if mask.ndim != 2:
+        raise ValueError(f"Expected a 2D binary mask, got shape {mask.shape}")
+
+    top, bottom, left, right = crop_box
+    cropped_mask = mask[top:bottom, left:right].astype(bool)
+    dummy_depth = cropped_mask.astype(np.float32)
+    _, resized_mask = resize_depth_and_mask(
+        dummy_depth,
+        cropped_mask,
+        cfg["data"].get("image_size"),
+        mode=cfg["data"].get("resize_mode", "pad"),
+        min_size=cfg.get("patches", {}).get("size"),
+        patch_size=cfg.get("patches", {}).get("size"),
+        stride=cfg.get("patches", {}).get("stride"),
+    )
+    return resized_mask.astype(bool)
+
+
 def normalize_depth_map(
     depth_map: np.ndarray,
     valid_mask: np.ndarray,
@@ -371,35 +404,61 @@ def normalize_depth_map(
 def preprocess_depth_map(
     depth_map: np.ndarray,
     cfg: dict,
-) -> tuple[np.ndarray, np.ndarray, dict[str, float | int]]:
-    """Build a processed depth representation and its valid-pixel mask."""
+) -> tuple[np.ndarray, np.ndarray, dict[str, float | int | str]]:
+    """Build a processed depth representation and its object foreground mask."""
     raw_valid_mask = build_valid_mask(depth_map)
     foreground_mask = infer_foreground_mask(depth_map, raw_valid_mask)
-    crop_margin = int(cfg["data"].get("crop_margin", 0))
-    crop_source_mask = foreground_mask if np.any(foreground_mask) else raw_valid_mask
-    crop_box = compute_crop_box(crop_source_mask, depth_map.shape, margin=crop_margin)
-    cropped_depth, cropped_mask = crop_depth_and_mask(depth_map, raw_valid_mask, crop_box)
+    object_mask = foreground_mask & raw_valid_mask
+    mask_source = "foreground" if np.any(object_mask) else "raw_valid"
+    if not np.any(object_mask):
+        object_mask = raw_valid_mask
 
-    resized_depth, resized_mask = resize_depth_and_mask(
+    crop_margin = int(cfg["data"].get("crop_margin", 0))
+    crop_box = compute_crop_box(object_mask, depth_map.shape, margin=crop_margin)
+    cropped_depth, cropped_raw_valid_mask = crop_depth_and_mask(
+        depth_map,
+        raw_valid_mask,
+        crop_box,
+    )
+    _, cropped_object_mask = crop_depth_and_mask(depth_map, object_mask, crop_box)
+
+    resized_depth, resized_raw_valid_mask = resize_depth_and_mask(
         cropped_depth,
-        cropped_mask,
+        cropped_raw_valid_mask,
         cfg["data"].get("image_size"),
         mode=cfg["data"].get("resize_mode", "pad"),
         min_size=cfg.get("patches", {}).get("size"),
         patch_size=cfg.get("patches", {}).get("size"),
         stride=cfg.get("patches", {}).get("stride"),
     )
+    _, resized_object_mask = resize_depth_and_mask(
+        cropped_depth,
+        cropped_object_mask,
+        cfg["data"].get("image_size"),
+        mode=cfg["data"].get("resize_mode", "pad"),
+        min_size=cfg.get("patches", {}).get("size"),
+        patch_size=cfg.get("patches", {}).get("size"),
+        stride=cfg.get("patches", {}).get("stride"),
+    )
+    if resized_depth.shape != resized_object_mask.shape:
+        raise ValueError(
+            "Resized depth and object mask shapes must match, "
+            f"got {resized_depth.shape} and {resized_object_mask.shape}"
+        )
+
+    resized_object_mask &= resized_raw_valid_mask
     normalized_depth, stats = normalize_depth_map(
         resized_depth,
-        resized_mask,
+        resized_object_mask,
         mode=cfg["data"].get("normalization", "per_image"),
     )
-    normalized_depth[~resized_mask] = 0.0
+    normalized_depth[~resized_object_mask] = 0.0
 
     crop_top, crop_bottom, crop_left, crop_right = crop_box
     stats["raw_valid_fraction"] = float(raw_valid_mask.mean())
-    stats["foreground_fraction"] = float(foreground_mask.mean())
-    stats["processed_valid_fraction"] = float(resized_mask.mean())
+    stats["foreground_fraction"] = float(object_mask.mean())
+    stats["processed_valid_fraction"] = float(resized_object_mask.mean())
+    stats["processed_mask_source"] = mask_source
     stats["raw_height"] = float(depth_map.shape[0])
     stats["raw_width"] = float(depth_map.shape[1])
     stats["crop_top"] = int(crop_top)
@@ -411,12 +470,12 @@ def preprocess_depth_map(
     stats["processed_height"] = float(normalized_depth.shape[0])
     stats["processed_width"] = float(normalized_depth.shape[1])
 
-    return normalized_depth.astype(np.float32), resized_mask.astype(bool), stats
+    return normalized_depth.astype(np.float32), resized_object_mask.astype(bool), stats
 
 
 def preprocess_xyz_path(
     xyz_path: str | Path, cfg: dict
-) -> tuple[np.ndarray, np.ndarray, dict[str, float | int]]:
+) -> tuple[np.ndarray, np.ndarray, dict[str, float | int | str]]:
     """Load an XYZ TIFF file and preprocess its Z channel."""
     xyz_map = load_xyz_map(xyz_path)
     depth_map = extract_depth_map(xyz_map)

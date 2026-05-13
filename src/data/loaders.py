@@ -62,6 +62,10 @@ def _row_metadata(row: pd.Series | dict[str, Any]) -> dict[str, Any]:
         "mask_path",
         "processed_depth_path",
         "processed_mask_path",
+        "crop_top",
+        "crop_bottom",
+        "crop_left",
+        "crop_right",
     ):
         if key in row:
             value = row[key]

@@ -23,6 +23,7 @@ from src.data.preprocessing import (
     preprocess_xyz_path,
     resize_depth_and_mask,
     save_processed_sample,
+    transform_binary_mask_like_processed,
 )
 
 
@@ -166,6 +167,30 @@ class PreprocessingTestCase(unittest.TestCase):
         self.assertGreaterEqual(resized_depth.shape[0], 32)
         self.assertGreaterEqual(resized_depth.shape[1], 32)
 
+    def test_transform_binary_mask_like_processed_matches_depth_geometry(self) -> None:
+        """Ground-truth masks should use the same crop and resize geometry as depth."""
+        raw_mask = np.zeros((8, 8), dtype=bool)
+        raw_mask[2:4, 3:6] = True
+        cfg = {
+            "data": {
+                "image_size": [8, 8],
+                "resize_mode": "preserve_area",
+            },
+            "patches": {
+                "size": [4, 4],
+                "stride": [4, 4],
+            },
+        }
+
+        processed_mask = transform_binary_mask_like_processed(
+            raw_mask,
+            crop_box=(1, 7, 1, 7),
+            cfg=cfg,
+        )
+
+        self.assertEqual(processed_mask.shape, (8, 8))
+        self.assertTrue(bool(processed_mask.any()))
+
     def test_preprocess_and_save(self) -> None:
         """End-to-end preprocessing should save depth and mask arrays."""
         processed_depth, processed_mask, stats = preprocess_xyz_path(self.xyz_path, self.cfg)
@@ -225,6 +250,28 @@ class PreprocessingTestCase(unittest.TestCase):
         self.assertEqual(cropped_depth.shape, (6, 6))
         self.assertEqual(cropped_mask.shape, (6, 6))
         self.assertTrue(bool(cropped_mask[2, 2]))
+
+    def test_preprocess_saves_foreground_mask_not_raw_valid_mask(self) -> None:
+        """Processed masks should exclude valid background around the cropped object."""
+        depth_map = np.full((8, 8), 5.0, dtype=np.float32)
+        depth_map[2:6, 2:6] = 2.0
+        cfg = {
+            "data": {
+                "image_size": None,
+                "normalization": "per_image",
+                "crop_margin": 1,
+            }
+        }
+
+        processed_depth, processed_mask, stats = preprocess_depth_map(depth_map, cfg)
+
+        self.assertEqual(processed_depth.shape, (6, 6))
+        self.assertEqual(processed_mask.shape, (6, 6))
+        self.assertFalse(bool(processed_mask[0, 0]))
+        self.assertTrue(bool(processed_mask[2, 2]))
+        self.assertAlmostEqual(float(processed_depth[0, 0]), 0.0)
+        self.assertAlmostEqual(float(stats["processed_valid_fraction"]), 16 / 36)
+        self.assertEqual(stats["processed_mask_source"], "foreground")
 
 
 if __name__ == "__main__":

@@ -68,11 +68,20 @@ Label convention:
 - `0`: normal
 - `1`: anomalous
 
+`mask_path` points to the raw dataset ground-truth defect annotation when
+available. Heatmap figures transform this annotation into processed-image
+coordinates before drawing it.
+
 Current indexing choice:
 
 - use the dataset-provided `train`, `validation`, and `test` folders directly
 - normalize the split names in CSV files to `train`, `val`, and `test`
 - keep paths relative to the repository root
+
+`processed_mask_path` stores the foreground/object mask used for patch extraction.
+It is intentionally stricter than the raw finite-depth mask, and
+`processed_valid_fraction` reports this foreground/object-mask fraction in
+the processed crop.
 
 Current dataset documentation artifact:
 

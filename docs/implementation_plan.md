@@ -4,7 +4,7 @@
 
 Implement one shared pipeline for MVTec 3D-AD and plug two anomaly detectors into it:
 
-1. Classical pipeline: handcrafted patch features + one-class model.
+1. Classical pipeline: normalized height-patch features + one-class model.
 2. Deep pipeline: convolutional autoencoder + reconstruction error.
 
 Both methods must use the same:
@@ -25,6 +25,7 @@ Both methods must use the same:
 - Cache processed maps and patch metadata to avoid recomputing.
 - Use `environment.yml` as the single source of truth for dependencies.
 - Start with `OneClassSVM` as the main classical baseline.
+- Use the normalized depth or height values of each patch as the main classical feature vector. The earlier handcrafted statistics are kept only as an optional weak baseline, because they discard too much spatial structure.
 - Keep `IsolationForest` optional and easy to add later.
 - Use a small convolutional autoencoder, not a large architecture.
 - Generate heatmaps by aggregating patch-level scores back to image space.
@@ -122,6 +123,7 @@ The README should document:
     │   ├── patching.py
     │   └── loaders.py
     ├── features/
+    │   ├── raw_patch_features.py
     │   └── geometric_features.py
     ├── models/
     │   ├── ocsvm.py
@@ -334,26 +336,25 @@ Inference data:
 
 ## 7. Classical Feature Extraction
 
-File: `src/features/geometric_features.py`
+Files:
+
+- `src/features/raw_patch_features.py`
+- `src/features/geometric_features.py`
 
 Implement:
 
 - `extract_patch_features(patch) -> np.ndarray`
 - `extract_batch_features(patches) -> np.ndarray`
 
-Start with a small fixed feature vector:
+Main classical feature path:
 
-- mean
-- standard deviation
-- min
-- max
-- range
-- gradient magnitude mean
-- gradient magnitude std
-- roughness proxy
-- Laplacian mean or variance
+1. take the already processed and normalized depth patch,
+2. fill invalid or outside-object pixels using a deterministic mask-aware rule,
+3. flatten the patch into one normalized height vector,
+4. optionally reduce it with PCA,
+5. pass the transformed vector to the one-class model.
 
-Keep the feature set simple and stable. Do not add many descriptors unless the baseline is clearly too weak.
+The handcrafted nine-value geometric descriptor remains useful for documentation and ablation, but it is not the main baseline anymore because it can make true defects indistinguishable from normal sensor noise or local surface variation.
 
 ## 8. Classical Model
 
@@ -376,10 +377,11 @@ Implement:
 Patch score path:
 
 1. patch
-2. feature vector
+2. normalized height vector
 3. scaler
-4. anomaly model
-5. patch anomaly score
+4. optional PCA
+5. anomaly model
+6. patch anomaly score
 
 Image score:
 
@@ -496,6 +498,8 @@ Keep config values explicit:
 - patch size
 - stride
 - normalization mode
+- classical feature mode
+- classical PCA components
 - train/val split seed
 - classical hyperparameters
 - autoencoder hyperparameters
@@ -564,7 +568,7 @@ Implement in this order:
 3. Dataset indexing and split files.
 4. Preprocessing and processed-map caching.
 5. Patch extraction and aggregation.
-6. Classical feature extraction and `OneClassSVM`.
+6. Classical normalized-height patch features and `OneClassSVM`.
 7. Classical image scoring and heatmap generation.
 8. Autoencoder training and inference.
 9. Shared benchmark and visualization code.
@@ -581,7 +585,8 @@ Add small tests or sanity checks for:
 - dataset index contains expected counts,
 - preprocessing returns patchable processed arrays,
 - patch extraction plus aggregation reconstructs the full image layout correctly,
-- feature extractor returns fixed-length vectors,
+- raw patch feature extractor returns fixed-length normalized-height vectors,
+- optional handcrafted feature extractor returns fixed-length descriptor vectors,
 - classical model can fit on a small sample,
 - autoencoder forward pass returns the expected shape,
 - benchmark script writes metric files.
@@ -645,6 +650,6 @@ If we start implementing now, the first concrete tasks are:
 4. Implement dataset indexing and split export.
 5. Implement preprocessing and save processed maps.
 6. Implement patch extraction and aggregation.
-7. Implement classical features + `OneClassSVM`.
+7. Implement classical normalized-height patch features + `OneClassSVM`.
 8. Add benchmark output for image-level metrics and figures.
 9. Implement the autoencoder on top of the same patch pipeline.
