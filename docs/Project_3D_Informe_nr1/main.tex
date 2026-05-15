@@ -1,0 +1,56 @@
+\documentclass[9pt,a4paper,twocolumn,twoside]{rho-class/rho}
+\usepackage[english]{babel}
+
+%----------------------------------------------------------
+% Title
+%----------------------------------------------------------
+
+\doctype{Interim Report - INF398}
+\title{3D Surface Anomaly Detection on MVTec 3D-AD: Classical Features vs. Deep Learning}
+
+%----------------------------------------------------------
+% Authors, Affiliations and dates
+%----------------------------------------------------------
+
+\author[{\textasteriskcentered},a,1]{Roman Oelfken, Jannike Andrea Hultengreen}
+
+%----------------------------------------------------------
+% Corresponding author-, Document- information
+%----------------------------------------------------------
+
+\journal{Introducción al aprendizaje automático}
+\theday{\today}
+
+%----------------------------------------------------------
+
+\begin{document}
+
+    \maketitle
+    \thispagestyle{firststyle}
+
+%----------------------------------------------------------
+% Interim report sections
+\input{Sections/Project_Description}
+\input{Sections/Objectives}
+\input{Sections/Proposed_Solution}
+\input{Sections/Implementation_Plan}
+\input{Sections/Dataset_Preprocessing}
+\input{Sections/Preliminary_Experiments}
+\input{Sections/Adjustments}
+\section*{Repository}
+\addcontentsline{toc}{section}{Repository}
+
+The source code, configuration files, generated metrics and visual outputs are maintained in the project repository.
+
+\begin{center}
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{cl}
+         \faGithub &
+         \href{https://github.com/romanoen/Explainable-Surface-Defect-Detection-on-MVTec-AD-INF398}{Github - Surface defect detection on MVTec AD -INF398 }\\
+    \end{tabular}
+\end{center}
+\printbibliography[title={Updated Bibliography}]
+
+%----------------------------------------------------------
+
+\end{document}

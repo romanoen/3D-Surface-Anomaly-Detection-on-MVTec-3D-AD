@@ -1,0 +1,32 @@
+\section{Proposed Solution}
+
+\subsection*{Shared Patch-Based Pipeline}
+Both approaches are built on the same preprocessing, patch extraction and scoring pipeline. Each raw XYZ sample is converted into a depth map by extracting the $Z$ channel. The object foreground is estimated from valid depth values, cropped with a margin, resized while preserving aspect ratio and snapped to the patch grid. The resulting processed map is normalized over object pixels only. This produces a consistent representation while avoiding distortions for elongated categories such as \textit{rope}.
+
+The shared procedure is:
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,frame=single]
+for each sample:
+    load RGB and XYZ files
+    extract depth = XYZ[..., 2]
+    estimate foreground and crop object region
+    resize depth and mask, preserving aspect ratio
+    snap height/width to the patch grid
+    normalize valid object depth values
+    extract overlapping 32 x 32 patches
+    score each patch with the selected model
+    aggregate patch scores into an anomaly heatmap
+    compute image score with top-k mean pooling
+\end{lstlisting}
+
+This design makes the comparison fair: classical and deep models see the same samples, the same processed coordinates, the same patch grid and the same image-level scoring rule. It also makes qualitative localization possible because patch scores can be aggregated back into image space.
+
+\subsection*{Classical Baseline}
+The current classical baseline is trained independently for each object category. Each valid $32 \times 32$ depth patch is converted into a vector of $1024$ normalized height values. Invalid or outside-object pixels are filled with the patch mean to avoid artificial border patterns. Features are standardized with a \texttt{StandardScaler}, reduced to $64$ components with PCA and modeled with an RBF One-Class SVM \cite{scholkopf2001estimating}. The model is trained only on normal training patches from the same category.
+
+At inference time, every test image is decomposed into patches. The One-Class SVM decision scores are converted into anomaly scores, aggregated into a heatmap through overlap averaging and summarized into one image-level score using the mean of the top $5\%$ highest patch scores. Ground-truth masks are transformed with the same crop and resize geometry and drawn as contours on the qualitative figures.
+
+\subsection*{Deep Learning Pipeline}
+The planned deep baseline is a compact convolutional autoencoder trained on the same normal depth patches. Its input is initially a $1 \times 32 \times 32$ patch and its target is the reconstructed patch. The anomaly score will be the reconstruction residual, aggregated with the same overlap-aware mechanism used by the classical model. This provides a controlled comparison between a one-class boundary in PCA feature space and a learned reconstruction model over the same local representation.
+
+\subsection*{RGB and Multimodal Extension}
+Because early results indicate that some defects are weak in depth but visible in color, the final plan includes a controlled modality ablation. The intended variants are depth only, RGB only and depth+RGB. RGB images will be cropped and resized with the same geometry as the depth maps, but they will not be normalized per image with min-max scaling, since that could remove color-based anomaly information. This extension is planned as an adjustment motivated by the interim results rather than as an unrelated add-on.

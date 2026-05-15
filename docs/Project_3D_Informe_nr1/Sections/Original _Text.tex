@@ -1,0 +1,57 @@
+\section{Project Description}
+
+This project investigates industrial surface anomaly detection using the MVTec 3D-AD dataset \cite{bergmann2022mvtec3d}. Automated quality inspection remains an important challenge in industrial environments, and anomaly detection has become a central research topic in this domain \cite{bergmann2019mvtec,li2025surveyindustrialad}. Rather than approaching this task as standard supervised classification, we formulate it as unsupervised anomaly detection: models are trained only on defect-free samples and must identify abnormal regions at test time, following the evaluation protocol of MVTec 3D-AD \cite{bergmann2022mvtec3d}.
+
+The main goal of the project is to compare two different paradigms for anomaly detection. The first is a classical pipeline based on handcrafted geometric features extracted from 3D surface representations and modeled with a one-class machine learning algorithm such as One-Class SVM \cite{scholkopf2001estimating} or Isolation Forest \cite{liu2008isolation}. The second is a compact deep learning pipeline that learns representations of normal surface structure directly from depth-based inputs using an autoencoder, in line with reconstruction-based anomaly detection approaches discussed in the recent literature \cite{li2025surveyindustrialad}.
+
+To keep the project technically feasible while preserving the 3D character of the data, we represent the 3D scans as depth or height maps and operate on local surface patches. This allows us to compare explicit feature engineering against learned representations under the same anomaly detection setting. In addition to object-level anomaly scores, both approaches will be used to produce spatial anomaly maps, enabling qualitative localization of detected defects.
+
+\section{Objective}
+
+The primary objective is to implement and evaluate two unsupervised anomaly detection pipelines on a subset of MVTec 3D-AD under a unified experimental framework. The project compares predictive performance, localization quality, computational complexity, and interpretability.
+
+Specifically, the project addresses the following research questions:
+\begin{itemize}
+    \item Can handcrafted local geometric features combined with classical one-class machine learning provide a competitive baseline for 3D surface anomaly detection \cite{scholkopf2001estimating,liu2008isolation}?
+    \item Does a compact deep learning model trained on normal samples learn more effective representations of surface regularity than manually designed features \cite{li2025surveyindustrialad}?
+    \item What trade-offs emerge between predictive performance, localization quality, computational cost, and interpretability when comparing feature-based and deep learning-based anomaly detection?
+\end{itemize}
+
+\section{Methodology \& Planned Work}
+
+The experimental pipeline consists of data preparation, feature extraction, model training, and evaluation. To keep the scope manageable, we will select a small subset of object categories from MVTec 3D-AD and use the provided defect-free training samples to model normality \cite{bergmann2022mvtec3d}.
+
+For the classical baseline, each 3D scan will be represented as a depth or height map and divided into local overlapping patches. From each patch we will extract simple geometric descriptors such as local mean height, standard deviation, gradient magnitude, and surface roughness statistics. These feature vectors will then be used to train a one-class anomaly detector, such as a One-Class SVM \cite{scholkopf2001estimating} or Isolation Forest \cite{liu2008isolation}, exclusively on normal training patches.
+
+For the deep learning baseline, we will train a compact convolutional autoencoder on the same depth or height map representation. The network will learn to reconstruct normal surface structure from defect-free training data. At inference time, anomalies will be identified through elevated reconstruction error, yielding both global anomaly scores and spatial anomaly maps, as commonly done in reconstruction-based anomaly detection methods \cite{li2025surveyindustrialad}.
+
+The final workflow includes model tuning, quantitative comparison, and visualization of anomaly maps for representative normal and defective samples. The complete implementation will be documented in a reproducible repository and summarized in the final report.
+
+\section{Dataset \& Evaluation Strategy}
+
+We utilize the MVTec 3D-AD dataset, a benchmark specifically designed for unsupervised 3D anomaly detection and localization \cite{bergmann2022mvtec3d}. Since the project is intended to remain compact and technically manageable, we will restrict our analysis to a limited number of categories rather than the full dataset.
+
+Evaluation will be conducted at two levels. First, object-level anomaly detection performance will be assessed using metrics such as AUROC and precision-recall based measures, which are standard for anomaly detection benchmarks \cite{bergmann2019mvtec,bergmann2022mvtec3d}. Second, qualitative localization performance will be examined through anomaly heatmaps produced by both methods. Where feasible, these maps will be compared against the provided ground-truth defect annotations \cite{bergmann2022mvtec3d}.
+
+Because both methods are trained only on defect-free samples, the comparison remains fair and consistent with the anomaly detection setting of the dataset \cite{bergmann2022mvtec3d}. In addition to predictive performance, we will discuss training effort, inference cost, and interpretability. The classical pipeline offers naturally interpretable geometric features, whereas the deep learning model provides localization through reconstruction-based anomaly maps.
+
+The dataset is publicly available at:
+\href{https://www.mvtec.com/company/research/datasets/mvtec-3d-ad}{MVTec 3D-AD Dataset}
+\section{Starting Point}
+
+Conceived specifically for this course, this project focuses on a fundamental methodological comparison in anomaly detection: explicit feature engineering versus learned representations. Instead of evaluating multiple large-scale architectures, the work deliberately emphasizes a simple but informative comparison between a classical feature-based pipeline and a compact deep learning approach.
+
+The starting point of the project is the assumption that industrial anomalies can either be captured through carefully designed local geometric descriptors or through representations learned directly from normal surface data. By comparing these two paradigms on 3D industrial scans, the project aims to clarify whether deep learning offers a substantial practical advantage over simpler, more interpretable methods in this setting \cite{li2025surveyindustrialad}.
+
+\section*{Github Repository}
+\addcontentsline{toc}{section}{Github Repository}
+
+Visit the repository to access the source code, track ongoing development, report issues, and stay up to date with the latest changes.
+
+\begin{center}
+    \setlength{\tabcolsep}{3pt}
+    \begin{tabular}{cl}
+         \faGithub &
+         \href{https://github.com/romanoen/Explainable-Surface-Defect-Detection-on-MVTec-AD-INF398}{Github - Surface defect detection on MVTec AD -INF398 }\\
+    \end{tabular}
+\end{center}

@@ -1,0 +1,13 @@
+\section{Risks and Adjustments}
+
+\subsection*{Risks identified so far}
+The main technical risk is that many defects are not locally distinctive in depth alone. Some anomalous patches look plausible when viewed without broader object context, while some larger structural defects require global shape, position or neighborhood information. This explains why the local One-Class SVM baseline works reasonably for some categories but fails to separate normal and anomalous samples reliably overall.
+
+The second risk is representation quality. The original handcrafted descriptors were interpretable but too compressed. Replacing them with raw depth patches improved methodological fairness with the planned autoencoder, but the current AUROC still shows that model capacity alone may not solve missing-context defects.
+
+The third risk is time and implementation complexity. Completing the autoencoder, adding RGB preprocessing and running modality ablations must be done without destabilizing the already working shared pipeline.
+
+\subsection*{Plan adjustments for the final submission}
+Based on the interim results, the plan has been adjusted in four ways. First, the classical baseline is now defined as raw normalized depth patches plus PCA and One-Class SVM, while the nine-statistic handcrafted representation is kept only as an early weak baseline. Second, the autoencoder will use exactly the same patch extraction, split and scoring logic, so the comparison remains controlled. Third, RGB preprocessing will be added with the same crop and resize geometry as depth, followed by a modality ablation comparing depth, RGB and depth+RGB. Fourth, if both classical and autoencoder approaches remain weak, the final analysis will explicitly discuss context limitations and consider larger patches, multi-scale patches or position-aware features as future extensions.
+
+These adjustments keep the project within scope while making the final comparison more meaningful. The interim result is therefore not only a partial implementation milestone, but also evidence that the project direction should shift from "which model is better?" toward the more precise question "which representation and context are sufficient for each type of 3D anomaly?"
