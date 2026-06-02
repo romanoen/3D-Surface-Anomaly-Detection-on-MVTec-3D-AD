@@ -5,13 +5,23 @@ model:
   latent_channels: 64
 
 training:
+  per_category: true
+  device: auto
   batch_size: 64
+  num_workers: 0
   epochs: 50
   learning_rate: 0.001
   loss: mse
   early_stopping_patience: 8
+  early_stopping_min_delta: 0.0
+  max_train_patches: null
+  max_val_patches: null
+  checkpoint_name: conv_autoencoder.pt
+  reconstruction_examples: 6
 
 inference:
   patch_score: mean_residual
   image_score: topk_mean
   topk_fraction: 0.05
+  save_heatmaps: true
+  max_heatmap_figures_per_category: 4

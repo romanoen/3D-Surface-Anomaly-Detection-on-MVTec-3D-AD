@@ -10,13 +10,14 @@ The central comparison is between:
 
 1. A classical category-specific baseline based on raw normalized depth
    patches, PCA, and One-Class SVM.
-2. A planned compact convolutional autoencoder trained on the same patch
-   representation.
+2. A category-specific compact convolutional autoencoder trained on the same
+   patch representation.
 3. A planned RGB/depth modality ablation motivated by the interim results.
 
 The current repository already contains the shared data pipeline, the classical
-training and inference path, saved metrics, qualitative heatmaps, and project
-documentation for the interim report.
+training and inference path, an implemented depth-only autoencoder path, saved
+metrics, qualitative heatmaps, and project documentation for the interim
+report.
 
 ## Current Status
 
@@ -30,17 +31,20 @@ Implemented:
 - Category-specific classical baseline:
   `raw depth patch -> StandardScaler -> PCA(64) -> One-Class SVM`.
 - Classical inference with image scores and overlap-averaged anomaly heatmaps.
+- Category-specific depth-only convolutional autoencoder training on the same
+  normalized patch representation with masked reconstruction loss and saved
+  checkpoints.
+- Autoencoder inference with residual heatmaps and image-level anomaly scores.
 - Ground-truth contour visualization in processed-image coordinates.
 - Unit tests for the main data, patching, feature, model, training, and
   inference components.
 
 Planned next:
 
-- Complete the convolutional autoencoder training and inference path.
 - Add processed RGB maps using the same crop and resize geometry as depth.
 - Run controlled modality ablations: depth, RGB, and depth+RGB.
-- Compare classical and deep models under the same split, scoring, and
-  visualization setup.
+- Use the shared benchmark outputs to analyze failure cases and compare the two
+  depth-only baselines before expanding to RGB.
 
 ## Interim Results
 
@@ -77,7 +81,7 @@ categories but weak for others:
 Interpretation: the first baseline is a useful sanity check and a fair
 classical reference, but the results suggest that many MVTec 3D-AD defects are
 not reliably separable with local depth-only patches. This motivates the
-planned autoencoder and RGB/multimodal experiments.
+autoencoder baseline and later RGB/multimodal experiments.
 
 ## Dataset
 
@@ -183,21 +187,38 @@ Optional quick inference:
 python scripts/infer_classical.py --split test --max-images 20
 ```
 
-5. Run unit tests.
+5. Train the depth-only autoencoder.
+
+```bash
+python scripts/train_autoencoder.py
+```
+
+Useful smaller run:
+
+```bash
+python scripts/train_autoencoder.py --epochs 5 --max-train-patches 2000 --max-val-patches 500
+```
+
+6. Run the shared benchmark on the test split.
+
+```bash
+python scripts/run_benchmark.py
+```
+
+7. Generate diagnostic analysis figures from the saved benchmark outputs.
+
+```bash
+python scripts/generate_analysis_figures.py
+```
+
+8. Run unit tests.
 
 ```bash
 python -m unittest discover tests
 ```
 
-The autoencoder and final benchmark entry points are present but intentionally
-not implemented yet:
-
-```bash
-python scripts/train_autoencoder.py
-python scripts/run_benchmark.py
-```
-
-They are part of the remaining work for the final submission.
+The remaining work now centers on RGB or multimodal extensions and the final
+report analysis built on top of the saved benchmark outputs.
 
 ## Repository Structure
 
@@ -217,9 +238,9 @@ Important modules:
 ```text
 src/data/          Dataset indexing, preprocessing, patch extraction, loaders
 src/features/      Raw depth and geometric patch feature construction
-src/models/        One-Class SVM, Isolation Forest stub, autoencoder stub
-src/training/      Classical training utilities
-src/inference/     Classical inference and anomaly-map generation
+src/models/        One-Class SVM, Isolation Forest stub, compact autoencoder
+src/training/      Classical and autoencoder training utilities
+src/inference/     Classical inference, autoencoder inference, anomaly-map generation
 src/evaluation/    Metrics and visualization helpers
 src/utils/         Config, IO, logging, and reproducibility helpers
 ```
@@ -234,8 +255,9 @@ Figures:
 - `fig/02_preprocessing/`: raw vs. processed depth previews
 - `fig/03_patches/`: patch grid, traversal, and coverage checks
 - `fig/04_classical/`: classical anomaly heatmaps
-- `fig/05_autoencoder/`: reserved for autoencoder outputs
-- `fig/06_results/`: reserved for final comparisons
+- `fig/05_autoencoder/`: training curves, reconstruction examples, and residual heatmaps
+- `fig/06_results/`: shared comparison panels and per-category metric figures
+- `fig/06_results/analysis/`: ROC/PR curves, score-rank histograms, per-category deltas, and error galleries
 
 Classical model artifacts:
 
@@ -255,6 +277,34 @@ outputs/metrics/classical_per_category.csv
 outputs/metrics/classical_image_scores_test.csv
 outputs/metrics/classical_patch_scores_test.csv
 outputs/metrics/classical_heatmaps/
+```
+
+Autoencoder model artifacts:
+
+```text
+outputs/models/autoencoder/
++-- <category>/
+    +-- conv_autoencoder.pt
+```
+
+Autoencoder metrics and logs:
+
+```text
+outputs/logs/autoencoder_training_summary.json
+outputs/metrics/autoencoder_per_category.csv
+outputs/metrics/autoencoder_histories/
+outputs/metrics/autoencoder_image_scores_test.csv
+outputs/metrics/autoencoder_patch_scores_test.csv
+outputs/metrics/autoencoder_heatmaps/
+```
+
+Shared benchmark outputs:
+
+```text
+outputs/metrics/per_image.csv
+outputs/metrics/per_category.csv
+outputs/metrics/summary.csv
+fig/06_results/
 ```
 
 ## Documentation

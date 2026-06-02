@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from src.inference.anomaly_maps import (
+    aggregate_patch_residuals,
     aggregate_patch_scores,
     image_score_from_patch_scores,
     normalize_map_for_display,
@@ -52,6 +53,34 @@ class AnomalyMapsTestCase(unittest.TestCase):
             [
                 [2.0, 4.0, 0.0],
                 [2.0, 4.0, 6.0],
+            ],
+            dtype=np.float32,
+        )
+
+        np.testing.assert_allclose(heatmap, expected)
+
+    def test_aggregate_patch_residuals_averages_overlap(self) -> None:
+        """Residual maps should aggregate back into image space like scalar heatmaps."""
+        coords = np.array(
+            [
+                [0, 2, 0, 2],
+                [0, 2, 1, 3],
+            ],
+            dtype=np.int32,
+        )
+        residuals = np.array(
+            [
+                [[1.0, 3.0], [1.0, 3.0]],
+                [[5.0, 7.0], [5.0, 7.0]],
+            ],
+            dtype=np.float32,
+        )
+
+        heatmap = aggregate_patch_residuals(residuals, coords, (2, 3))
+        expected = np.array(
+            [
+                [1.0, 4.0, 7.0],
+                [1.0, 4.0, 7.0],
             ],
             dtype=np.float32,
         )

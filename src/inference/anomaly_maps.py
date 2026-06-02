@@ -9,7 +9,7 @@ from typing import Sequence
 
 import numpy as np
 
-from src.data.patching import aggregate_patch_values
+from src.data.patching import aggregate_patch_maps, aggregate_patch_values
 
 _CACHE_ROOT = Path(tempfile.gettempdir()) / "mvtec_3d_ad_cache"
 _CACHE_ROOT.mkdir(parents=True, exist_ok=True)
@@ -65,6 +65,38 @@ def aggregate_patch_scores(
     if valid_mask.shape != heatmap.shape:
         raise ValueError(f"Mask shape {valid_mask.shape} does not match heatmap {heatmap.shape}")
 
+    masked_heatmap = heatmap.copy()
+    masked_heatmap[~valid_mask] = 0.0
+    return masked_heatmap
+
+
+def aggregate_patch_residuals(
+    patch_residuals: np.ndarray,
+    coords: np.ndarray,
+    image_shape: tuple[int, int] | Sequence[int],
+    valid_mask: np.ndarray | None = None,
+) -> np.ndarray:
+    """Aggregate per-patch residual maps back into image space."""
+    residuals = np.asarray(patch_residuals, dtype=np.float32)
+    if residuals.ndim == 4:
+        residuals = np.moveaxis(residuals, 1, -1)
+    if residuals.ndim == 3:
+        heatmap = aggregate_patch_maps(residuals, coords, image_shape)
+    elif residuals.ndim == 4:
+        heatmap = aggregate_patch_maps(residuals, coords, image_shape).mean(axis=-1)
+    else:
+        raise ValueError(
+            "Expected residual maps with shape (N, H, W) or (N, C, H, W), "
+            f"got {residuals.shape}"
+        )
+
+    heatmap = np.asarray(heatmap, dtype=np.float32)
+    if valid_mask is None:
+        return heatmap
+
+    valid_mask = np.asarray(valid_mask, dtype=bool)
+    if valid_mask.shape != heatmap.shape:
+        raise ValueError(f"Mask shape {valid_mask.shape} does not match heatmap {heatmap.shape}")
     masked_heatmap = heatmap.copy()
     masked_heatmap[~valid_mask] = 0.0
     return masked_heatmap

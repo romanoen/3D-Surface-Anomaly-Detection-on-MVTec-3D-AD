@@ -1,0 +1,242 @@
+{
+  "model": "conv_autoencoder",
+  "training_scope": "per_category",
+  "category_count": 10,
+  "train_patch_count": 537310,
+  "val_patch_count": 59733,
+  "device": "mps",
+  "model_root": "outputs/models/autoencoder",
+  "category_summary_path": "outputs/metrics/autoencoder_per_category.csv",
+  "categories": [
+    {
+      "category": "bagel",
+      "model": "conv_autoencoder",
+      "train_patch_count": 53646,
+      "val_patch_count": 4858,
+      "epochs_completed": 29,
+      "best_epoch": 21,
+      "best_val_loss": 2.8255209294992266e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/bagel/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/bagel.csv",
+      "figure_root": "fig/05_autoencoder/training/bagel",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "cable_gland",
+      "model": "conv_autoencoder",
+      "train_patch_count": 41056,
+      "val_patch_count": 4425,
+      "epochs_completed": 50,
+      "best_epoch": 50,
+      "best_val_loss": 2.869126634980752e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/cable_gland/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/cable_gland.csv",
+      "figure_root": "fig/05_autoencoder/training/cable_gland",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "carrot",
+      "model": "conv_autoencoder",
+      "train_patch_count": 50569,
+      "val_patch_count": 5144,
+      "epochs_completed": 50,
+      "best_epoch": 48,
+      "best_val_loss": 5.21320833068328e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/carrot/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/carrot.csv",
+      "figure_root": "fig/05_autoencoder/training/carrot",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "cookie",
+      "model": "conv_autoencoder",
+      "train_patch_count": 43746,
+      "val_patch_count": 4643,
+      "epochs_completed": 48,
+      "best_epoch": 40,
+      "best_val_loss": 2.0538451248510003e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/cookie/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/cookie.csv",
+      "figure_root": "fig/05_autoencoder/training/cookie",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "dowel",
+      "model": "conv_autoencoder",
+      "train_patch_count": 34100,
+      "val_patch_count": 3987,
+      "epochs_completed": 42,
+      "best_epoch": 34,
+      "best_val_loss": 8.631510097057058e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/dowel/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/dowel.csv",
+      "figure_root": "fig/05_autoencoder/training/dowel",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "foam",
+      "model": "conv_autoencoder",
+      "train_patch_count": 56489,
+      "val_patch_count": 6476,
+      "epochs_completed": 33,
+      "best_epoch": 25,
+      "best_val_loss": 2.5137130802185845e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/foam/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/foam.csv",
+      "figure_root": "fig/05_autoencoder/training/foam",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "peach",
+      "model": "conv_autoencoder",
+      "train_patch_count": 74500,
+      "val_patch_count": 8623,
+      "epochs_completed": 39,
+      "best_epoch": 31,
+      "best_val_loss": 2.1104187454393255e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/peach/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/peach.csv",
+      "figure_root": "fig/05_autoencoder/training/peach",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "potato",
+      "model": "conv_autoencoder",
+      "train_patch_count": 62339,
+      "val_patch_count": 6880,
+      "epochs_completed": 16,
+      "best_epoch": 8,
+      "best_val_loss": 0.020782510728337044,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/potato/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/potato.csv",
+      "figure_root": "fig/05_autoencoder/training/potato",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "rope",
+      "model": "conv_autoencoder",
+      "train_patch_count": 73096,
+      "val_patch_count": 7966,
+      "epochs_completed": 50,
+      "best_epoch": 46,
+      "best_val_loss": 1.5165478791373606e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/rope/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/rope.csv",
+      "figure_root": "fig/05_autoencoder/training/rope",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    },
+    {
+      "category": "tire",
+      "model": "conv_autoencoder",
+      "train_patch_count": 47769,
+      "val_patch_count": 6731,
+      "epochs_completed": 50,
+      "best_epoch": 47,
+      "best_val_loss": 1.7016911653952546e-05,
+      "device": "mps",
+      "checkpoint_path": "outputs/models/autoencoder/tire/conv_autoencoder.pt",
+      "history_path": "outputs/metrics/autoencoder_histories/tire.csv",
+      "figure_root": "fig/05_autoencoder/training/tire",
+      "model_config": {
+        "name": "conv_autoencoder",
+        "in_channels": 1,
+        "encoder_channels": [
+          16,
+          32,
+          64
+        ],
+        "latent_channels": 64
+      }
+    }
+  ]
+}
