@@ -35,53 +35,54 @@ Implemented:
   normalized patch representation with masked reconstruction loss and saved
   checkpoints.
 - Autoencoder inference with residual heatmaps and image-level anomaly scores.
+- Shared benchmark outputs with per-image, per-category, and summary metrics.
+- Diagnostic analysis figures for ROC/PR behavior, category deltas, and
+  representative error cases.
 - Ground-truth contour visualization in processed-image coordinates.
-- Unit tests for the main data, patching, feature, model, training, and
-  inference components.
+- Unit tests for the main data, patching, feature, model, training,
+  inference, benchmark, and visualization components.
 
 Planned next:
 
 - Add processed RGB maps using the same crop and resize geometry as depth.
 - Run controlled modality ablations: depth, RGB, and depth+RGB.
-- Use the shared benchmark outputs to analyze failure cases and compare the two
-  depth-only baselines before expanding to RGB.
+- Build on the shared benchmark outputs to explain failure modes and motivate
+  the RGB or multimodal extension.
 
-## Interim Results
+## Current Benchmark Results
 
-The current classical baseline was trained per category on normal training
-patches only. The latest run used:
+The latest full benchmark compares the two completed depth-only baselines on
+the same shared test split. The run used:
 
 - 10 object categories.
-- 200000 normal training patches.
-- 47913 validation patches.
 - 1197 test images.
-- 238113 scored test patches.
-- 1024 raw depth values per patch, reduced to 64 PCA features.
+- 238113 scored test patches for each method.
 
 Image-level test performance:
 
-| Metric | Value |
-| --- | ---: |
-| Overall AUROC | 0.5517 |
-| Overall AP | 0.8293 |
-| Macro AUROC | 0.5415 |
-| Macro AP | 0.8307 |
+| Method | Overall AUROC | Overall AP | Macro AUROC | Macro AP |
+| --- | ---: | ---: | ---: | ---: |
+| Classical | 0.5517 | 0.8293 | 0.5415 | 0.8307 |
+| Autoencoder | 0.5837 | 0.8227 | 0.5812 | 0.8402 |
 
-Per-category AUROC shows that the local depth-only baseline is useful for some
-categories but weak for others:
+Per-category AUROC deltas show where the autoencoder helps most and where the
+classical baseline still holds an advantage:
 
-| Category | AUROC | Category | AUROC |
+| Autoencoder Better | Delta AUROC | Classical Better | Delta AUROC |
 | --- | ---: | --- | ---: |
-| rope | 0.8071 | carrot | 0.5017 |
-| cookie | 0.6969 | potato | 0.4773 |
-| peach | 0.6705 | bagel | 0.4597 |
-| cable_gland | 0.5145 | foam | 0.4350 |
-| dowel | 0.4301 | tire | 0.4221 |
+| bagel | +0.1999 | peach | -0.1165 |
+| foam | +0.1600 | cable_gland | -0.0772 |
+| cookie | +0.1221 | tire | -0.0211 |
+| rope | +0.0539 |  |  |
+| dowel | +0.0514 |  |  |
 
-Interpretation: the first baseline is a useful sanity check and a fair
-classical reference, but the results suggest that many MVTec 3D-AD defects are
-not reliably separable with local depth-only patches. This motivates the
-autoencoder baseline and later RGB/multimodal experiments.
+Interpretation: both methods capture non-random anomaly signal, but neither is
+reliably strong across all categories. The classical baseline often reacts to
+global object geometry, boundary regions, or patch artifacts; the autoencoder
+usually produces cleaner and more localized heatmaps but still misses many
+defects or responds too weakly. These depth-only baselines are useful as
+references and for failure analysis, but they do not yet provide dependable
+anomaly detection on the full benchmark.
 
 ## Dataset
 
@@ -220,6 +221,32 @@ python -m unittest discover tests
 The remaining work now centers on RGB or multimodal extensions and the final
 report analysis built on top of the saved benchmark outputs.
 
+## Tests And CI
+
+The `tests/` suite is designed to protect the pipeline logic without requiring
+the full MVTec 3D-AD dataset. The tests use small synthetic fixtures and
+temporary directories to verify:
+
+- dataset indexing and split handling
+- preprocessing and mask transforms
+- patch extraction and feature construction
+- OCSVM and autoencoder training/inference behavior
+- benchmark table generation and metric calculations
+- qualitative figure and selection helpers
+
+Run the full test suite locally with:
+
+```bash
+python -m unittest discover tests
+```
+
+The repository also includes a GitHub Actions workflow at
+`.github/workflows/tests.yml` that creates the conda environment, installs the
+package in editable mode, and runs the same unit tests automatically on pushes
+and pull requests. The CI intentionally does not run the full dataset
+preparation, training, or benchmark steps, because those require the external
+dataset and are much heavier than the logic checks covered by the tests.
+
 ## Repository Structure
 
 ```text
@@ -258,6 +285,14 @@ Figures:
 - `fig/05_autoencoder/`: training curves, reconstruction examples, and residual heatmaps
 - `fig/06_results/`: shared comparison panels and per-category metric figures
 - `fig/06_results/analysis/`: ROC/PR curves, score-rank histograms, per-category deltas, and error galleries
+
+The comparison figures now use a clearer layout:
+
+- `depth + GT` for the original processed depth map with the defect annotation
+- `classical heatmap` as a standalone method output
+- `autoencoder heatmap` as a standalone method output
+
+This avoids confusing depth texture or noise with the model response itself.
 
 Classical model artifacts:
 
@@ -319,6 +354,6 @@ Core project documentation:
 - `docs/Project_3D_Informe_nr1/`: LaTeX interim report for submission
 
 The report and README are aligned around the same current project story: the
-shared patch pipeline is implemented, the classical depth-only baseline exposes
-important representation and context limitations, and the final phase will test
-autoencoder and RGB/multimodal extensions under the same framework.
+shared patch pipeline and both depth-only baselines are implemented, the saved
+benchmark and analysis figures make their limitations visible, and the next
+phase is the RGB or multimodal extension under the same evaluation framework.
