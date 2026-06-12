@@ -208,7 +208,7 @@ python scripts/run_benchmark.py
 
 7. Generate diagnostic analysis figures from the saved benchmark outputs.
 
-```bash
+```bash  
 python scripts/generate_analysis_figures.py
 ```
 
