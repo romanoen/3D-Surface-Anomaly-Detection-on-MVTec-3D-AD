@@ -1,4 +1,4 @@
-# MVTec 3D-AD Surface Anomaly Detection
+# MVTec 3D-AD Surface Anomaly Detection 
 
 This repository implements a reproducible anomaly detection pipeline for the
 MVTec 3D-AD dataset. The project studies industrial surface inspection in the
